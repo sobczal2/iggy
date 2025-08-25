@@ -20,14 +20,20 @@ using Apache.Iggy.Factory;
 using Iggy_SDK.Examples.GettingStarted.Consumer;
 using Microsoft.Extensions.Logging;
 
-var loggerFactory = LoggerFactory.Create(b => { b.AddConsole(); });
+var loggerFactory = LoggerFactory.Create(b =>
+{
+    b.AddConsole();
+});
 var logger = loggerFactory.CreateLogger<Program>();
 
-var client = MessageStreamFactory.CreateMessageStream(opt =>
-{
-    opt.BaseAdress = Utils.GetTcpServerAddr(args, logger);
-    opt.Protocol = Protocol.Tcp;
-}, loggerFactory);
+var client = MessageStreamFactory.CreateMessageStream(
+    opt =>
+    {
+        opt.BaseAdress = Utils.GetTcpServerAddr(args, logger);
+        opt.Protocol = Protocol.Tcp;
+    },
+    loggerFactory
+);
 
 await client.LoginUser("iggy", "iggy");
 

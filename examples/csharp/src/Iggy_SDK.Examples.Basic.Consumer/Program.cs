@@ -24,21 +24,28 @@ using Iggy_SDK.Examples.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-var loggerFactory = LoggerFactory.Create(b => { b.AddConsole(); });
+var loggerFactory = LoggerFactory.Create(b =>
+{
+    b.AddConsole();
+});
 var logger = loggerFactory.CreateLogger<Program>();
 
-var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
-    .Build();
+var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 var settings = configuration.Get<Settings>() ?? new Settings();
 
-logger.LogInformation("Basic consumer has started, selected protocol: {Protocol}", settings.Protocol);
+logger.LogInformation(
+    "Basic consumer has started, selected protocol: {Protocol}",
+    settings.Protocol
+);
 
-var client = MessageStreamFactory.CreateMessageStream(opt =>
-{
-    opt.BaseAdress = settings.BaseAddress;
-    opt.Protocol = settings.Protocol;
-}, loggerFactory);
+var client = MessageStreamFactory.CreateMessageStream(
+    opt =>
+    {
+        opt.BaseAdress = settings.BaseAddress;
+        opt.Protocol = settings.Protocol;
+    },
+    loggerFactory
+);
 
 await client.LoginUser(settings.Username, settings.Password);
 
@@ -50,14 +57,30 @@ var partitionId = 1u;
 var consumerId = 1;
 
 await ExampleHelpers.EnsureStreamExists(client, streamId, settings.StreamId);
-await ExampleHelpers.EnsureTopicExists(client, streamId, topicId, settings.TopicId, settings.PartitionsCount);
+await ExampleHelpers.EnsureTopicExists(
+    client,
+    streamId,
+    topicId,
+    settings.TopicId,
+    settings.PartitionsCount
+);
 while (true)
 {
-    var response = await client.PollMessagesAsync(streamId, topicId, partitionId, Consumer.New(consumerId),
-        PollingStrategy.Next(), 10, true);
+    var response = await client.PollMessagesAsync(
+        streamId,
+        topicId,
+        partitionId,
+        Consumer.New(consumerId),
+        PollingStrategy.Next(),
+        10,
+        true
+    );
 
     foreach (var message in response.Messages)
     {
-        logger.LogInformation("Received message: {Payload}", Encoding.UTF8.GetString(message.Payload));
+        logger.LogInformation(
+            "Received message: {Payload}",
+            Encoding.UTF8.GetString(message.Payload)
+        );
     }
 }

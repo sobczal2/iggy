@@ -25,7 +25,12 @@ namespace Iggy_SDK.Examples.Shared;
 
 public static class ExampleHelpers
 {
-    public static async Task EnsureStreamExists(IIggyClient client, Identifier streamId, string streamName, CancellationToken token = default)
+    public static async Task EnsureStreamExists(
+        IIggyClient client,
+        Identifier streamId,
+        string streamName,
+        CancellationToken token = default
+    )
     {
         try
         {
@@ -36,14 +41,15 @@ public static class ExampleHelpers
             await client.CreateStreamAsync(streamName, token: token);
         }
     }
-    
-    public static async Task EnsureTopicExists(IIggyClient client,
+
+    public static async Task EnsureTopicExists(
+        IIggyClient client,
         Identifier streamId,
         Identifier topicId,
         string topicName,
         uint partitionsCount,
         CancellationToken cancellationToken = default
-        )
+    )
     {
         try
         {
@@ -51,12 +57,17 @@ public static class ExampleHelpers
         }
         catch (InvalidResponseException)
         {
-            await client.CreateTopicAsync(streamId, topicName, partitionsCount, token: cancellationToken);
+            await client.CreateTopicAsync(
+                streamId,
+                topicName,
+                partitionsCount,
+                token: cancellationToken
+            );
         }
     }
 
     public static Message CreateMessage(int messageId)
     {
-        return new Message(Guid.NewGuid(),  Encoding.UTF8.GetBytes($"message-{messageId}"));
+        return new Message(Guid.NewGuid(), Encoding.UTF8.GetBytes($"message-{messageId}"));
     }
 }
