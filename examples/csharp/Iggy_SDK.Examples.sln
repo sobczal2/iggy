@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iggy_SDK.Examples.Shared", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iggy_SDK.Examples.Basic.Producer", "src\Iggy_SDK.Examples.Basic.Producer\Iggy_SDK.Examples.Basic.Producer.csproj", "{5DBD2AE2-B68A-4072-8740-839EA19E400A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iggy_SDK.Examples.GettingStarted.Consumer", "src\Iggy_SDK.Examples.GettingStarted.Consumer\Iggy_SDK.Examples.GettingStarted.Consumer.csproj", "{2E3377E5-7193-4D61-9E24-3B43E73F930D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iggy_SDK.Examples.GettingStarted.Producer", "src\Iggy_SDK.Examples.GettingStarted.Producer\Iggy_SDK.Examples.GettingStarted.Producer.csproj", "{F2B5BC7A-B273-4167-B794-13BE49C991D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +42,20 @@ Global
 		{5DBD2AE2-B68A-4072-8740-839EA19E400A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DBD2AE2-B68A-4072-8740-839EA19E400A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DBD2AE2-B68A-4072-8740-839EA19E400A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E3377E5-7193-4D61-9E24-3B43E73F930D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E3377E5-7193-4D61-9E24-3B43E73F930D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E3377E5-7193-4D61-9E24-3B43E73F930D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E3377E5-7193-4D61-9E24-3B43E73F930D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2B5BC7A-B273-4167-B794-13BE49C991D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2B5BC7A-B273-4167-B794-13BE49C991D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2B5BC7A-B273-4167-B794-13BE49C991D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2B5BC7A-B273-4167-B794-13BE49C991D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D25FEFAD-7A4A-4617-91E3-1B0AB9737A7C} = {3576C181-8BD5-4845-9CDA-835B33A29A29}
 		{6CA0C169-109F-4A43-A21F-0792C1F865C8} = {3576C181-8BD5-4845-9CDA-835B33A29A29}
 		{5DBD2AE2-B68A-4072-8740-839EA19E400A} = {3576C181-8BD5-4845-9CDA-835B33A29A29}
+		{2E3377E5-7193-4D61-9E24-3B43E73F930D} = {3576C181-8BD5-4845-9CDA-835B33A29A29}
+		{F2B5BC7A-B273-4167-B794-13BE49C991D5} = {3576C181-8BD5-4845-9CDA-835B33A29A29}
 	EndGlobalSection
 EndGlobal
