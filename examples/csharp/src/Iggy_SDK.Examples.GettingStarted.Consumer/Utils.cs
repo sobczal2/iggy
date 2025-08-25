@@ -31,7 +31,7 @@ public static class Utils
     private const uint TopicId = 1;
     private const uint PartitionId = 1;
     private const uint BatchesLimit = 5;
-    
+
     public static async Task ConsumeMessages(IIggyClient client, ILogger logger)
     {
         var interval = TimeSpan.FromMilliseconds(500);
@@ -41,7 +41,7 @@ public static class Utils
             TopicId,
             PartitionId,
             interval
-            );
+        );
 
         var offset = 0ul;
         var messagesPerBatch = 10;
@@ -49,25 +49,29 @@ public static class Utils
         var consumer = Apache.Iggy.Kinds.Consumer.New(1); // Default method missing
         while (true)
         {
-            if (consumedBatches == BatchesLimit) {
-                logger.LogInformation("Consumed {ConsumedBatches} batches of messages, exiting.", consumedBatches);
+            if (consumedBatches == BatchesLimit)
+            {
+                logger.LogInformation(
+                    "Consumed {ConsumedBatches} batches of messages, exiting.",
+                    consumedBatches
+                );
                 return;
             }
 
             var streamIdentifier = Identifier.Numeric(StreamId);
             var topicIdentifier = Identifier.Numeric(TopicId);
-            var polledMessages = await client
-                .PollMessagesAsync(
-                    streamIdentifier,
-                    topicIdentifier,
-                    PartitionId,
-                    consumer,
-                    PollingStrategy.Offset(offset),
-                    messagesPerBatch,
-                    false
-                    );
-            
-            if (!polledMessages.Messages.Any()) {
+            var polledMessages = await client.PollMessagesAsync(
+                streamIdentifier,
+                topicIdentifier,
+                PartitionId,
+                consumer,
+                PollingStrategy.Offset(offset),
+                messagesPerBatch,
+                false
+            );
+
+            if (!polledMessages.Messages.Any())
+            {
                 logger.LogInformation("No messages found.");
                 await Task.Delay(interval);
                 continue;
@@ -89,7 +93,8 @@ public static class Utils
         logger.LogInformation(
             "Handling message at offset: {Offset}, payload: {Payload}...",
             message.Header.Offset,
-            payload);
+            payload
+        );
     }
 
     public static string GetTcpServerAddr(string[] args, ILogger logger)
@@ -106,12 +111,16 @@ public static class Utils
         argumentName = argumentName ?? throw new ArgumentNullException(argumentName);
         if (argumentName != "--tcp-server-address")
         {
-            throw new FormatException($"Invalid argument {argumentName}! Usage: --tcp-server-address <server-address>");
+            throw new FormatException(
+                $"Invalid argument {argumentName}! Usage: --tcp-server-address <server-address>"
+            );
         }
         tcpServerAddr = tcpServerAddr ?? throw new ArgumentNullException(tcpServerAddr);
         if (!IPEndPoint.TryParse(tcpServerAddr, out var _))
         {
-            throw new FormatException($"Invalid server address {tcpServerAddr}! Usage: --tcp-server-address <server-address>");
+            throw new FormatException(
+                $"Invalid server address {tcpServerAddr}! Usage: --tcp-server-address <server-address>"
+            );
         }
         logger.LogInformation("Using server address: {TcpServerAddr}", tcpServerAddr);
         return tcpServerAddr;
