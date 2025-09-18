@@ -48,7 +48,7 @@ public static class Utils
         var offset = 0ul;
         var messagesPerBatch = 10;
         var consumedBatches = 0;
-        var consumer = Apache.Iggy.Kinds.Consumer.New(1); // Default method missing
+        var consumer = Apache.Iggy.Kinds.Consumer.New(1);
         while (true)
         {
             if (consumedBatches == BATCHES_LIMIT)

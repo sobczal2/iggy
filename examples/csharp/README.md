@@ -73,7 +73,7 @@ All examples can be executed directly from the repository. Follow these steps:
 
 1. **Start the Iggy server**: `cargo run --bin iggy-server`
 2. **Run desired example**: `dotnet run --project examples/csharp/src/xxx`
-3. **Check source code**: Examples include detailed comments explaining concepts and usage patterns
+3. **Check source code**
 
 These examples use IggyClient with TCP transport and demonstrate automatic stream/topic creation with basic message handling.
 
