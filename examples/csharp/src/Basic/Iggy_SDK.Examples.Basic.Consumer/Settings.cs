@@ -22,10 +22,11 @@ namespace Iggy_SDK.Examples.Basic.Consumer;
 public sealed class Settings
 {
     public Protocol Protocol { get; set; }
-    public string BaseAddress { get; set; }
-    public string Username { get; set; }
-    public string Password { get; set; }
-    public string StreamName { get; set; }
-    public string TopicName { get; set; }
+    public string BaseAddress { get; set; } = null!;
+    public string Username { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public string StreamName { get; set; } = null!;
+    public string TopicName { get; set; } = null!;
+    public int MessageBatchesLimit { get; set; }
     public uint PartitionsCount { get; set; }
 }

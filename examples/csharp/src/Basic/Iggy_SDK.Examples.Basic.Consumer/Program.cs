@@ -62,8 +62,16 @@ await ExampleHelpers.EnsureTopicExists(
     settings.PartitionsCount
 );
 
+var consumedBatches = 0;
 while (true)
 {
+    
+    if (settings.MessageBatchesLimit > 0 && consumedBatches == settings.MessageBatchesLimit)
+    {
+        logger.LogInformation("Consumed {ConsumedBatches} batches of messages, exiting.", consumedBatches);
+        break;
+    }
+    
     var response = await client.PollMessagesAsync(
         streamId,
         topicId,
@@ -80,4 +88,6 @@ while (true)
             message.Header.Offset,
             Encoding.UTF8.GetString(message.Payload)
         );
+    
+    consumedBatches++;
 }

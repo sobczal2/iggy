@@ -31,7 +31,7 @@ namespace Iggy_SDK.Examples.GettingStarted.Producer;
 public static class Utils
 {
     private const uint STREAM_ID = 1;
-    private const uint TOPIC_ID = 1;
+    private const uint TOPIC_ID = 2;
     private const uint PARTITION_ID = 1;
     private const uint BATCHES_LIMIT = 5;
 

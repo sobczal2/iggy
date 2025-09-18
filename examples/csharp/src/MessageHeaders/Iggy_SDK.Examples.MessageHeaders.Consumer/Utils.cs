@@ -31,7 +31,7 @@ namespace Iggy_SDK.Examples.MessageHeaders.Consumer;
 public static class Utils
 {
     private const uint STREAM_ID = 1;
-    private const uint TOPIC_ID = 1;
+    private const uint TOPIC_ID = 3;
     private const uint PARTITION_ID = 1;
     private const uint BATCHES_LIMIT = 5;
 
@@ -49,7 +49,7 @@ public static class Utils
         var offset = 0ul;
         var messagesPerBatch = 10;
         var consumedBatches = 0;
-        var consumer = Apache.Iggy.Kinds.Consumer.New(1); // Default method missing
+        var consumer = Apache.Iggy.Kinds.Consumer.New(1);
         while (true)
         {
             if (consumedBatches == BATCHES_LIMIT)
@@ -89,7 +89,6 @@ public static class Utils
 
     private static void HandleMessage(MessageResponse message, ILogger logger)
     {
-        var payload = Encoding.UTF8.GetString(message.Payload);
         var headerKey = HeaderKey.New("message_type");
         var headersMap = message.UserHeaders ?? throw new Exception("Missing headers map.");
         var messageType = Encoding.UTF8.GetString(headersMap[headerKey].Value);

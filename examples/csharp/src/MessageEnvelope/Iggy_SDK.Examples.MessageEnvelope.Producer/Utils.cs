@@ -32,7 +32,7 @@ namespace Iggy_SDK.Examples.MessageEnvelope.Producer;
 public static class Utils
 {
     private const uint STREAM_ID = 1;
-    private const uint TOPIC_ID = 1;
+    private const uint TOPIC_ID = 4;
     private const uint PARTITION_ID = 1;
     private const uint BATCHES_LIMIT = 5;
 
@@ -79,7 +79,7 @@ public static class Utils
         var messagesPerBatch = 10;
         var sentBatches = 0;
         var messagesGenerator = new MessagesGenerator();
-        var partitioning = Partitioning.PartitionId((int)PARTITION_ID); // should be uint
+        var partitioning = Partitioning.PartitionId((int)PARTITION_ID);
 
         while (true)
         {
