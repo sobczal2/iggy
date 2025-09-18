@@ -24,10 +24,7 @@ using Iggy_SDK.Examples.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-var loggerFactory = LoggerFactory.Create(b =>
-{
-    b.AddConsole();
-});
+var loggerFactory = LoggerFactory.Create(b => { b.AddConsole(); });
 var logger = loggerFactory.CreateLogger<Program>();
 
 var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -64,6 +61,7 @@ await ExampleHelpers.EnsureTopicExists(
     settings.TopicId,
     settings.PartitionsCount
 );
+
 while (true)
 {
     var response = await client.PollMessagesAsync(
@@ -77,10 +75,9 @@ while (true)
     );
 
     foreach (var message in response.Messages)
-    {
         logger.LogInformation(
-            "Received message: {Payload}",
+            "Handling message at offset: {Offset}, payload: {Payload}...",
+            message.Header.Offset,
             Encoding.UTF8.GetString(message.Payload)
         );
-    }
 }

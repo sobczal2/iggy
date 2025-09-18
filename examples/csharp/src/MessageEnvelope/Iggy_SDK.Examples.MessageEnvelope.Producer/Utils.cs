@@ -16,6 +16,7 @@
 // under the License.
 
 using System.Net;
+using System.Text;
 using Apache.Iggy;
 using Apache.Iggy.Contracts;
 using Apache.Iggy.Enums;
@@ -26,7 +27,7 @@ using Iggy_SDK.Examples.Shared;
 using Microsoft.Extensions.Logging;
 using Partitioning = Apache.Iggy.Kinds.Partitioning;
 
-namespace Iggy_SDK.Examples.GettingStarted.Producer;
+namespace Iggy_SDK.Examples.MessageEnvelope.Producer;
 
 public static class Utils
 {
@@ -39,7 +40,7 @@ public static class Utils
     {
         try
         {
-            await client.CreateStreamAsync("sample-stream", StreamId);
+            await client.CreateStreamAsync("message-envelope-example-stream", StreamId);
             logger.LogInformation("Stream was created.");
         }
         catch (InvalidResponseException)
@@ -51,7 +52,7 @@ public static class Utils
         {
             await client.CreateTopicAsync(
                 Identifier.Numeric(StreamId),
-                "sample-topic",
+                "message-envelope-example-topic",
                 1,
                 CompressionAlgorithm.None,
                 TopicId
@@ -75,10 +76,11 @@ public static class Utils
             interval
         );
 
-        var currentId = 0;
         var messagesPerBatch = 10;
         var sentBatches = 0;
+        var messagesGenerator = new MessagesGenerator();
         var partitioning = Partitioning.PartitionId((int)PartitionId); // should be uint
+
         while (true)
         {
             if (sentBatches == BatchesLimit)
@@ -90,31 +92,38 @@ public static class Utils
                 return;
             }
 
-            var messages = Enumerable
-                .Range(currentId, currentId + messagesPerBatch)
-                .Aggregate(
-                    new List<Message>(messagesPerBatch),
-                    (list, next) =>
-                    {
-                        list.Add(ExampleHelpers.CreateMessage(next));
-                        return list;
-                    }
-                );
+            var serializableMessages = Enumerable
+                .Range(0, messagesPerBatch)
+                .Aggregate(new List<ISerializableMessage>(), (list, _) =>
+                {
+                    var serializableMessage = messagesGenerator.Generate();
+                    list.Add(serializableMessage);
+                    return list;
+                });
+
+            var messages = serializableMessages.Select(serializableMessage =>
+                {
+                    var jsonEnvelope = serializableMessage.ToJsonEnvelope();
+                    return new Message(Guid.NewGuid(), Encoding.UTF8.GetBytes(jsonEnvelope));
+                }
+            ).ToList();
 
             var streamIdentifier = Identifier.Numeric(StreamId);
             var topicIdentifier = Identifier.Numeric(TopicId);
+            logger.LogInformation("Sending messages count: {Count}", messagesPerBatch);
+
             await client.SendMessagesAsync(
                 new MessageSendRequest
                 {
                     StreamId = streamIdentifier,
                     TopicId = topicIdentifier,
                     Partitioning = partitioning,
-                    Messages = messages,
+                    Messages = messages
                 }
             );
 
             sentBatches++;
-            logger.LogInformation("Sent {MessagesPerBatch} message(s).", messagesPerBatch);
+            logger.LogInformation("Sent messages: {Messages}.", serializableMessages);
 
             await Task.Delay(interval);
         }
@@ -126,25 +135,18 @@ public static class Utils
         var argumentName = args.Length > 0 ? args[0] : null;
         var tcpServerAddr = args.Length > 1 ? args[1] : null;
 
-        if (argumentName is null && tcpServerAddr is null)
-        {
-            return defaultServerAddr;
-        }
+        if (argumentName is null && tcpServerAddr is null) return defaultServerAddr;
 
         argumentName = argumentName ?? throw new ArgumentNullException(argumentName);
         if (argumentName != "--tcp-server-address")
-        {
             throw new FormatException(
                 $"Invalid argument {argumentName}! Usage: --tcp-server-address <server-address>"
             );
-        }
         tcpServerAddr = tcpServerAddr ?? throw new ArgumentNullException(tcpServerAddr);
-        if (!IPEndPoint.TryParse(tcpServerAddr, out var _))
-        {
+        if (!IPEndPoint.TryParse(tcpServerAddr, out _))
             throw new FormatException(
                 $"Invalid server address {tcpServerAddr}! Usage: --tcp-server-address <server-address>"
             );
-        }
         logger.LogInformation("Using server address: {TcpServerAddr}", tcpServerAddr);
         return tcpServerAddr;
     }

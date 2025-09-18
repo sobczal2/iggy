@@ -20,10 +20,7 @@ using Apache.Iggy.Factory;
 using Iggy_SDK.Examples.GettingStarted.Producer;
 using Microsoft.Extensions.Logging;
 
-var loggerFactory = LoggerFactory.Create(b =>
-{
-    b.AddConsole();
-});
+var loggerFactory = LoggerFactory.Create(b => { b.AddConsole(); });
 var logger = loggerFactory.CreateLogger<Program>();
 
 var client = MessageStreamFactory.CreateMessageStream(

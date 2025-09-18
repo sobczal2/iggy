@@ -19,11 +19,14 @@ using System.Net;
 using System.Text;
 using Apache.Iggy;
 using Apache.Iggy.Contracts;
+using Apache.Iggy.Enums;
+using Apache.Iggy.Exceptions;
 using Apache.Iggy.IggyClient;
-using Apache.Iggy.Kinds;
+using Apache.Iggy.Messages;
 using Microsoft.Extensions.Logging;
+using Partitioning = Apache.Iggy.Kinds.Partitioning;
 
-namespace Iggy_SDK.Examples.GettingStarted.Consumer;
+namespace Iggy_SDK.Examples.GettingStarted.Producer;
 
 public static class Utils
 {
@@ -32,69 +35,90 @@ public static class Utils
     private const uint PartitionId = 1;
     private const uint BatchesLimit = 5;
 
-    public static async Task ConsumeMessages(IIggyClient client, ILogger logger)
+    public static async Task InitSystem(IIggyClient client, ILogger logger)
+    {
+        try
+        {
+            await client.CreateStreamAsync("getting-started-example-stream", StreamId);
+            logger.LogInformation("Stream was created.");
+        }
+        catch (InvalidResponseException)
+        {
+            logger.LogWarning("Stream already exists and will not be created again.");
+        }
+
+        try
+        {
+            await client.CreateTopicAsync(
+                Identifier.Numeric(StreamId),
+                "getting-started-example-topic",
+                1,
+                CompressionAlgorithm.None,
+                TopicId
+            );
+            logger.LogInformation("Topic was created.");
+        }
+        catch (InvalidResponseException)
+        {
+            logger.LogWarning("Topic already exists and will not be created again.");
+        }
+    }
+
+    public static async Task ProduceMessages(IIggyClient client, ILogger logger)
     {
         var interval = TimeSpan.FromMilliseconds(500);
         logger.LogInformation(
-            "Messages will be consumed from stream: {StreamId}, topic: {TopicId}, partition: {PartitionId} with interval {Interval}.",
+            "Messages will be sent to stream: {StreamId}, topic: {TopicId}, partition: {PartitionId} with interval {Interval}.",
             StreamId,
             TopicId,
             PartitionId,
             interval
         );
 
-        var offset = 0ul;
+        var currentId = 0;
         var messagesPerBatch = 10;
-        var consumedBatches = 0;
-        var consumer = Apache.Iggy.Kinds.Consumer.New(1); // Default method missing
+        var sentBatches = 0;
+        var partitioning = Partitioning.PartitionId((int)PartitionId); // should be uint
         while (true)
         {
-            if (consumedBatches == BatchesLimit)
+            if (sentBatches == BatchesLimit)
             {
                 logger.LogInformation(
-                    "Consumed {ConsumedBatches} batches of messages, exiting.",
-                    consumedBatches
+                    "Sent {SentBatches} batches of messages, exiting.",
+                    sentBatches
                 );
                 return;
             }
 
+            var payloads = Enumerable
+                .Range(currentId, messagesPerBatch)
+                .Aggregate(new List<string>(), (list, next) =>
+                {
+                    list.Add($"message-{next}");
+                    return list;
+                });
+
+            var messages = payloads.Select(payload => new Message(Guid.NewGuid(), Encoding.UTF8.GetBytes(payload)))
+                .ToList();
+
             var streamIdentifier = Identifier.Numeric(StreamId);
             var topicIdentifier = Identifier.Numeric(TopicId);
-            var polledMessages = await client.PollMessagesAsync(
-                streamIdentifier,
-                topicIdentifier,
-                PartitionId,
-                consumer,
-                PollingStrategy.Offset(offset),
-                messagesPerBatch,
-                false
+            await client.SendMessagesAsync(
+                new MessageSendRequest
+                {
+                    StreamId = streamIdentifier,
+                    TopicId = topicIdentifier,
+                    Partitioning = partitioning,
+                    Messages = messages
+                }
             );
 
-            if (!polledMessages.Messages.Any())
-            {
-                logger.LogInformation("No messages found.");
-                await Task.Delay(interval);
-                continue;
-            }
+            currentId += messagesPerBatch;
+            sentBatches++;
+            logger.LogInformation("Sent messages: {Messages}.", payloads);
 
-            offset += (ulong)polledMessages.Messages.Count;
-            foreach (var message in polledMessages.Messages)
-            {
-                HandleMessage(message, logger);
-            }
-            consumedBatches++;
             await Task.Delay(interval);
         }
-    }
-
-    private static void HandleMessage(MessageResponse message, ILogger logger)
-    {
-        var payload = Encoding.UTF8.GetString(message.Payload);
-        logger.LogInformation(
-            "Handling message at offset: {Offset}, payload: {Payload}...",
-            message.Header.Offset,
-            payload
-        );
     }
 
     public static string GetTcpServerAddr(string[] args, ILogger logger)
@@ -103,25 +127,18 @@ public static class Utils
         var argumentName = args.Length > 0 ? args[0] : null;
         var tcpServerAddr = args.Length > 1 ? args[1] : null;
 
-        if (argumentName is null && tcpServerAddr is null)
-        {
-            return defaultServerAddr;
-        }
+        if (argumentName is null && tcpServerAddr is null) return defaultServerAddr;
 
         argumentName = argumentName ?? throw new ArgumentNullException(argumentName);
         if (argumentName != "--tcp-server-address")
-        {
             throw new FormatException(
                 $"Invalid argument {argumentName}! Usage: --tcp-server-address <server-address>"
             );
-        }
         tcpServerAddr = tcpServerAddr ?? throw new ArgumentNullException(tcpServerAddr);
-        if (!IPEndPoint.TryParse(tcpServerAddr, out var _))
-        {
+        if (!IPEndPoint.TryParse(tcpServerAddr, out _))
             throw new FormatException(
                 $"Invalid server address {tcpServerAddr}! Usage: --tcp-server-address <server-address>"
             );
-        }
         logger.LogInformation("Using server address: {TcpServerAddr}", tcpServerAddr);
         return tcpServerAddr;
     }

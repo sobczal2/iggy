@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+using System.Text;
 using Apache.Iggy;
 using Apache.Iggy.Contracts;
 using Apache.Iggy.Factory;
@@ -25,10 +26,7 @@ using Iggy_SDK.Examples.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-var loggerFactory = LoggerFactory.Create(b =>
-{
-    b.AddConsole();
-});
+var loggerFactory = LoggerFactory.Create(b => { b.AddConsole(); });
 var logger = loggerFactory.CreateLogger<Program>();
 ;
 var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -74,16 +72,15 @@ while (true)
         break;
     }
 
-    var messages = Enumerable
-        .Range(currentId, currentId + settings.MessagesPerBatch)
-        .Aggregate(
-            new List<Message>(settings.MessagesPerBatch),
-            (list, next) =>
-            {
-                list.Add(ExampleHelpers.CreateMessage(next));
-                return list;
-            }
-        );
+    var payloads = Enumerable
+        .Range(currentId, settings.MessagesPerBatch)
+        .Aggregate(new List<string>(), (list, next) =>
+        {
+            list.Add($"message-{next}");
+            return list;
+        });
+
+    var messages = payloads.Select(payload => new Message(Guid.NewGuid(), Encoding.UTF8.GetBytes(payload))).ToList();
 
     await client.SendMessagesAsync(
         new MessageSendRequest
@@ -91,15 +88,13 @@ while (true)
             StreamId = streamId,
             TopicId = topicId,
             Messages = messages,
-            Partitioning = Partitioning.None(),
+            Partitioning = Partitioning.None()
         }
     );
 
-    logger.LogInformation(
-        $"Sent messages from id: {currentId} to: {currentId + settings.MessagesPerBatch}"
-    );
     currentId += settings.MessagesPerBatch;
     sentBatches++;
+    logger.LogInformation("Sent messages: {Messages}", payloads);
 
     await Task.Delay(settings.Interval);
 }

@@ -15,11 +15,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-using System.Text;
 using Apache.Iggy;
 using Apache.Iggy.Exceptions;
 using Apache.Iggy.IggyClient;
-using Apache.Iggy.Messages;
 
 namespace Iggy_SDK.Examples.Shared;
 
@@ -64,10 +62,5 @@ public static class ExampleHelpers
                 token: cancellationToken
             );
         }
-    }
-
-    public static Message CreateMessage(int messageId)
-    {
-        return new Message(Guid.NewGuid(), Encoding.UTF8.GetBytes($"message-{messageId}"));
     }
 }

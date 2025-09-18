@@ -1,4 +1,4 @@
-// Licensed to the Apache Software Foundation (ASF) under one
+﻿// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
 // regarding copyright ownership.  The ASF licenses this file
@@ -16,19 +16,23 @@
 // under the License.
 
 using Apache.Iggy.Enums;
+using Apache.Iggy.Factory;
+using Iggy_SDK.Examples.MessageEnvelope.Producer;
+using Microsoft.Extensions.Logging;
 
-namespace Iggy_SDK.Examples.Basic.Producer;
+var loggerFactory = LoggerFactory.Create(b => { b.AddConsole(); });
+var logger = loggerFactory.CreateLogger<Program>();
 
-public sealed class Settings
-{
-    public Protocol Protocol { get; set; } = Protocol.Tcp;
-    public string BaseAddress { get; set; } = "127.0.0.1:8090";
-    public string Username { get; set; } = "iggy";
-    public string Password { get; set; } = "iggy";
-    public string StreamName { get; set; } = "example-basic";
-    public string TopicName { get; set; } = "example-basic-topic";
-    public int MessageBatchesLimit { get; set; } = 100;
-    public int MessagesPerBatch { get; set; } = 10;
-    public TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(1);
-    public uint PartitionsCount { get; set; } = 1;
-}
+var client = MessageStreamFactory.CreateMessageStream(
+    opt =>
+    {
+        opt.BaseAdress = Utils.GetTcpServerAddr(args, logger);
+        opt.Protocol = Protocol.Tcp;
+    },
+    loggerFactory
+);
+
+await client.LoginUser("iggy", "iggy");
+
+await Utils.InitSystem(client, logger);
+await Utils.ProduceMessages(client, logger);
