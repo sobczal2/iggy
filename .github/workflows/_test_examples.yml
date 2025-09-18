@@ -104,6 +104,13 @@ jobs:
           echo "Running Go examples tests..."
           # Run the examples script which will use the prebuilt server binary
           ./scripts/run-go-examples-from-readme.sh
+          
+      - name: Run Csharp examples
+        if: inputs.component == 'examples-suite' && inputs.task == 'examples-csharp'
+        run: |
+          echo "Running Csharp examples tests..."
+          # Run the examples script which will use the prebuilt server binary
+          ./scripts/run-csharp-examples-from-readme.sh
 
       - name: Upload reports
         if: always()
