@@ -48,17 +48,17 @@ await client.LoginUser(settings.Username, settings.Password);
 
 logger.LogInformation("Basic consumer has logged on successfully");
 
-var streamId = Identifier.String(settings.StreamId);
-var topicId = Identifier.String(settings.TopicId);
+var streamId = Identifier.String(settings.StreamName);
+var topicId = Identifier.String(settings.TopicName);
 var partitionId = 1u;
 var consumerId = 1;
 
-await ExampleHelpers.EnsureStreamExists(client, streamId, settings.StreamId);
+await ExampleHelpers.EnsureStreamExists(client, streamId, settings.StreamName);
 await ExampleHelpers.EnsureTopicExists(
     client,
     streamId,
     topicId,
-    settings.TopicId,
+    settings.TopicName,
     settings.PartitionsCount
 );
 

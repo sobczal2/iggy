@@ -32,16 +32,16 @@ namespace Iggy_SDK.Examples.MessageHeaders.Producer;
 
 public static class Utils
 {
-    private const uint StreamId = 1;
-    private const uint TopicId = 1;
-    private const uint PartitionId = 1;
-    private const uint BatchesLimit = 5;
+    private const uint STREAM_ID = 1;
+    private const uint TOPIC_ID = 1;
+    private const uint PARTITION_ID = 1;
+    private const uint BATCHES_LIMIT = 5;
 
     public static async Task InitSystem(IIggyClient client, ILogger logger)
     {
         try
         {
-            await client.CreateStreamAsync("message-headers-example-stream", StreamId);
+            await client.CreateStreamAsync("message-headers-example-stream", STREAM_ID);
             logger.LogInformation("Stream was created.");
         }
         catch (InvalidResponseException)
@@ -52,11 +52,11 @@ public static class Utils
         try
         {
             await client.CreateTopicAsync(
-                Identifier.Numeric(StreamId),
+                Identifier.Numeric(STREAM_ID),
                 "message-headers-example-topic",
                 1,
                 CompressionAlgorithm.None,
-                TopicId
+                TOPIC_ID
             );
             logger.LogInformation("Topic was created.");
         }
@@ -71,20 +71,20 @@ public static class Utils
         var interval = TimeSpan.FromMilliseconds(500);
         logger.LogInformation(
             "Messages will be sent to stream: {StreamId}, topic: {TopicId}, partition: {PartitionId} with interval {Interval}.",
-            StreamId,
-            TopicId,
-            PartitionId,
+            STREAM_ID,
+            TOPIC_ID,
+            PARTITION_ID,
             interval
         );
 
         var messagesPerBatch = 10;
         var sentBatches = 0;
         var messagesGenerator = new MessagesGenerator();
-        var partitioning = Partitioning.PartitionId((int)PartitionId); // should be uint
+        var partitioning = Partitioning.PartitionId((int)PARTITION_ID); // should be uint
 
         while (true)
         {
-            if (sentBatches == BatchesLimit)
+            if (sentBatches == BATCHES_LIMIT)
             {
                 logger.LogInformation(
                     "Sent {SentBatches} batches of messages, exiting.",
@@ -113,8 +113,8 @@ public static class Utils
                 }
             ).ToList();
 
-            var streamIdentifier = Identifier.Numeric(StreamId);
-            var topicIdentifier = Identifier.Numeric(TopicId);
+            var streamIdentifier = Identifier.Numeric(STREAM_ID);
+            var topicIdentifier = Identifier.Numeric(TOPIC_ID);
             logger.LogInformation("Sending messages count: {Count}", messagesPerBatch);
 
             await client.SendMessagesAsync(

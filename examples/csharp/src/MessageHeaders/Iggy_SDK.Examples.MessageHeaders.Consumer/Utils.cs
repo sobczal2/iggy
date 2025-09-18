@@ -30,19 +30,19 @@ namespace Iggy_SDK.Examples.MessageHeaders.Consumer;
 
 public static class Utils
 {
-    private const uint StreamId = 1;
-    private const uint TopicId = 1;
-    private const uint PartitionId = 1;
-    private const uint BatchesLimit = 5;
+    private const uint STREAM_ID = 1;
+    private const uint TOPIC_ID = 1;
+    private const uint PARTITION_ID = 1;
+    private const uint BATCHES_LIMIT = 5;
 
     public static async Task ConsumeMessages(IIggyClient client, ILogger logger)
     {
         var interval = TimeSpan.FromMilliseconds(500);
         logger.LogInformation(
             "Messages will be consumed from stream: {StreamId}, topic: {TopicId}, partition: {PartitionId} with interval {Interval}.",
-            StreamId,
-            TopicId,
-            PartitionId,
+            STREAM_ID,
+            TOPIC_ID,
+            PARTITION_ID,
             interval
         );
 
@@ -52,7 +52,7 @@ public static class Utils
         var consumer = Apache.Iggy.Kinds.Consumer.New(1); // Default method missing
         while (true)
         {
-            if (consumedBatches == BatchesLimit)
+            if (consumedBatches == BATCHES_LIMIT)
             {
                 logger.LogInformation(
                     "Consumed {ConsumedBatches} batches of messages, exiting.",
@@ -61,12 +61,12 @@ public static class Utils
                 return;
             }
 
-            var streamIdentifier = Identifier.Numeric(StreamId);
-            var topicIdentifier = Identifier.Numeric(TopicId);
+            var streamIdentifier = Identifier.Numeric(STREAM_ID);
+            var topicIdentifier = Identifier.Numeric(TOPIC_ID);
             var polledMessages = await client.PollMessagesAsync(
                 streamIdentifier,
                 topicIdentifier,
-                PartitionId,
+                PARTITION_ID,
                 consumer,
                 PollingStrategy.Offset(offset),
                 messagesPerBatch,

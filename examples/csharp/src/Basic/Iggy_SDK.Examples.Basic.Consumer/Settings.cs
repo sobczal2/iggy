@@ -21,11 +21,11 @@ namespace Iggy_SDK.Examples.Basic.Consumer;
 
 public sealed class Settings
 {
-    public Protocol Protocol { get; set; } = Protocol.Tcp;
-    public string BaseAddress { get; set; } = "127.0.0.1:8090";
-    public string Username { get; set; } = "iggy";
-    public string Password { get; set; } = "iggy";
-    public string StreamId { get; set; } = "example-basic-stream";
-    public string TopicId { get; set; } = "example-basic-topic";
-    public uint PartitionsCount { get; set; } = 1;
+    public Protocol Protocol { get; set; }
+    public string BaseAddress { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
+    public string StreamName { get; set; }
+    public string TopicName { get; set; }
+    public uint PartitionsCount { get; set; }
 }
