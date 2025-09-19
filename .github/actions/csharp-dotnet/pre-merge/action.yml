@@ -109,7 +109,7 @@ runs:
       if: inputs.task == 'build'
       run: |
         # Build in Release mode
-        dotnet foreign/csharp/Iggy_SDK.sln build -c Release --no-restore
+        dotnet build foreign/csharp/Iggy_SDK.sln build -c Release --no-restore
 
         # List build output
         echo "Build output:"
