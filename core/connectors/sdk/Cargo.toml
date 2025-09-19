@@ -34,6 +34,7 @@ ignored = ["prost"]
 [dependencies]
 async-trait = { workspace = true }
 base64 = "0.22.1"
+bson = { workspace = true }
 chrono = { workspace = true }
 dashmap = { workspace = true }
 flatbuffers = "25.2.10"

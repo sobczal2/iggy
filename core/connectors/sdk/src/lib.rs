@@ -28,7 +28,7 @@ use encoders::{
 };
 use iggy::prelude::{HeaderKey, HeaderValue};
 use once_cell::sync::OnceCell;
-use prost::Message;
+use prost::{bytes::Buf, Message};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc};
 use strum_macros::{Display, IntoStaticStr};
@@ -42,6 +42,8 @@ pub mod source;
 pub mod transforms;
 
 pub use transforms::Transform;
+
+use crate::{decoders::bson::BsonStreamDecoder, encoders::bson::BsonStreamEncoder};
 
 static RUNTIME: OnceCell<Runtime> = OnceCell::new();
 
@@ -92,6 +94,7 @@ pub enum Payload {
     Text(String),
     Proto(String),
     FlatBuffer(Vec<u8>),
+    Bson(bson::Document),
 }
 
 impl Payload {
@@ -104,6 +107,7 @@ impl Payload {
             Payload::Text(text) => Ok(text.into_bytes()),
             Payload::Proto(text) => Ok(text.into_bytes()),
             Payload::FlatBuffer(value) => Ok(value),
+            Payload::Bson(value) => Ok(value.to_vec().map_err(|_| Error::InvalidBsonPayload)?),
         }
     }
 }
@@ -112,14 +116,15 @@ impl std::fmt::Display for Payload {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Payload::Json(value) => write!(
-                f,
-                "Json({})",
-                simd_json::to_string_pretty(value).unwrap_or_default()
-            ),
+                                f,
+                                "Json({})",
+                                simd_json::to_string_pretty(value).unwrap_or_default()
+                            ),
             Payload::Raw(value) => write!(f, "Raw({value:#?})"),
             Payload::Text(text) => write!(f, "Text({text})"),
             Payload::Proto(text) => write!(f, "Proto({text})"),
             Payload::FlatBuffer(value) => write!(f, "FlatBuffer({} bytes)", value.len()),
+            Payload::Bson(document) => write!(f, "Bson({})", document),
         }
     }
 }
@@ -141,6 +146,8 @@ pub enum Schema {
     Proto,
     #[strum(to_string = "flatbuffer")]
     FlatBuffer,
+    #[strum(to_string = "bson")]
+    Bson,
 }
 
 impl Schema {
@@ -164,6 +171,7 @@ impl Schema {
                 Err(_) => Ok(Payload::Raw(value)),
             },
             Schema::FlatBuffer => Ok(Payload::FlatBuffer(value)),
+            Schema::Bson => Ok(Payload::Bson(bson::Document::from_reader(value.reader()).map_err(|_| Error::InvalidBsonPayload)?)),
         }
     }
 
@@ -174,6 +182,7 @@ impl Schema {
             Schema::Text => Arc::new(TextStreamDecoder),
             Schema::Proto => Arc::new(ProtoStreamDecoder::default()),
             Schema::FlatBuffer => Arc::new(FlatBufferStreamDecoder::default()),
+            Schema::Bson => Arc::new(BsonStreamDecoder),
         }
     }
 
@@ -184,6 +193,7 @@ impl Schema {
             Schema::Text => Arc::new(TextStreamEncoder),
             Schema::Proto => Arc::new(ProtoStreamEncoder::default()),
             Schema::FlatBuffer => Arc::new(FlatBufferStreamEncoder::default()),
+            Schema::Bson => Arc::new(BsonStreamEncoder),
         }
     }
 }
@@ -317,4 +327,6 @@ pub enum Error {
     CannotWriteStateFile,
     #[error("Invalid state")]
     InvalidState,
+    #[error("Invalid BSON payload.")]
+    InvalidBsonPayload,
 }

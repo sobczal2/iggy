@@ -16,9 +16,19 @@
  * under the License.
  */
 
-pub mod flatbuffer;
-pub mod json;
-pub mod bson;
-pub mod proto;
-pub mod raw;
-pub mod text;
+use bson::Document;
+use prost::bytes::Buf;
+
+use crate::{Error, Payload, Schema, StreamDecoder};
+
+pub struct BsonStreamDecoder;
+
+impl StreamDecoder for BsonStreamDecoder {
+    fn schema(&self) -> Schema {
+        Schema::Bson
+    }
+
+    fn decode(&self, payload: Vec<u8>) -> Result<Payload, Error> {
+        Ok(Payload::Bson(Document::from_reader(payload.reader()).map_err(|_| Error::InvalidBsonPayload)?))
+    }
+}
