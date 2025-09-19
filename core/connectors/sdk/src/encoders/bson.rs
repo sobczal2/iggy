@@ -16,9 +16,25 @@
  * under the License.
  */
 
-pub mod flatbuffer;
-pub mod json;
-pub mod bson;
-pub mod proto;
-pub mod raw;
-pub mod text;
+use crate::{Error, Payload, Schema, StreamEncoder};
+
+pub struct BsonStreamEncoder;
+
+impl StreamEncoder for BsonStreamEncoder {
+    fn schema(&self) -> Schema {
+        Schema::Bson
+    }
+
+    fn encode(&self, payload: Payload) -> Result<Vec<u8>, Error> {
+        match payload {
+            Payload::Bson(value) => {
+                value.to_vec().map_err(|_| Error::InvalidBsonPayload)
+            }
+            Payload::Json(value) => {
+                // TODO: revisit, maybe there is a better way
+                bson::serialize_to_vec(&value).map_err(|_| Error::InvalidBsonPayload)
+            }
+            _ => Err(Error::InvalidPayloadType),
+        }
+    }
+}

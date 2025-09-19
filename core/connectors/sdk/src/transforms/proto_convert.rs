@@ -470,6 +470,7 @@ impl ProtoConvert {
                     Err(Error::InvalidPayloadType)
                 }
             }
+            Schema::Bson => self.protobuf_to_bson(payload),
         }
     }
 
@@ -487,6 +488,7 @@ impl ProtoConvert {
                     Err(Error::InvalidPayloadType)
                 }
             }
+            Schema::Bson => self.bson_to_protobuf(payload),
         }
     }
 
@@ -582,6 +584,27 @@ impl ProtoConvert {
                 }
             }
             _other => Err(Error::InvalidPayloadType),
+        }
+    }
+
+    fn protobuf_to_bson(&self, payload: Payload) -> Result<Payload, Error> {
+        if let Payload::Json(json_value) = self.protobuf_to_json(payload)? {
+            let bson = bson::serialize_to_document(&json_value).map_err(|_| Error::InvalidBsonPayload)?;
+            Ok(Payload::Bson(bson))
+        }
+        else {
+            unreachable!()
+        }
+    }
+
+    fn bson_to_protobuf(&self, payload: Payload) -> Result<Payload, Error> {
+        match payload {
+            Payload::Bson(document) => {
+                // TODO: switch to specialized implementation
+                let json_value = simd_json::value::to_owned_value(&mut simd_json::to_vec(&document).map_err(|_| Error::InvalidJsonPayload)?).map_err(|_| Error::InvalidJsonPayload)?;
+                self.json_to_protobuf(Payload::Json(json_value))
+            }
+            _other => Err(Error::InvalidPayloadType)
         }
     }
 

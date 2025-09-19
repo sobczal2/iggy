@@ -71,6 +71,7 @@ bench-runner = { path = "core/bench/runner" }
 bincode = { version = "2.0.1", features = ["serde"] }
 blake3 = "1.8.2"
 bon = "3.7.2"
+bson = { version = "3.0.0", features = ["serde"] }
 byte-unit = { version = "5.1.6", default-features = false, features = [
     "serde",
     "byte",
