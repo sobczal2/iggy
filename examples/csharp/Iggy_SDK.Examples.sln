@@ -1,5 +1,4 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -99,3 +98,4 @@ Global
 		{FBA6F7E6-D92E-4E8F-81F0-625AE60F7E45} = {578335B4-7B95-41D5-BB73-E965CAB2DBA4}
 	EndGlobalSection
 EndGlobal
+
