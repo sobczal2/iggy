@@ -21,6 +21,7 @@ mod delete_fields;
 mod filter_fields;
 pub mod flatbuffer_convert;
 pub mod json;
+pub mod bson;
 pub mod proto_convert;
 mod update_fields;
 use crate::{DecodedMessage, Error, TopicMetadata};

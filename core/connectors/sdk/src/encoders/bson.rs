@@ -28,13 +28,50 @@ impl StreamEncoder for BsonStreamEncoder {
     fn encode(&self, payload: Payload) -> Result<Vec<u8>, Error> {
         match payload {
             Payload::Bson(value) => {
-                value.to_vec().map_err(|_| Error::InvalidBsonPayload)
+                bson::serialize_to_vec(&value).map_err(|_| Error::InvalidBsonPayload)
             }
             Payload::Json(value) => {
-                // TODO: revisit, maybe there is a better way
                 bson::serialize_to_vec(&value).map_err(|_| Error::InvalidBsonPayload)
             }
             _ => Err(Error::InvalidPayloadType),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bson::bson;
+    use simd_json::json;
+
+    use super::*;
+
+    #[test]
+    fn encode_should_encode_bson_value_successfully() {
+        let encoder = BsonStreamEncoder;
+
+        let payload = Payload::Bson(bson!({
+            "data": "test"
+        }));
+
+        let result = encoder.encode(payload);
+        assert!(
+            result.is_ok(),
+            "Should encode bson data"
+        );
+    }
+
+    #[test]
+    fn encode_should_encode_json_value_successfully() {
+        let encoder = BsonStreamEncoder;
+
+        let payload = Payload::Json(json!({
+            "data": "test"
+        }));
+
+        let result = encoder.encode(payload);
+        assert!(
+            result.is_ok(),
+            "Should encode json data"
+        );
     }
 }

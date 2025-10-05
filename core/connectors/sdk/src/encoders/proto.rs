@@ -16,9 +16,8 @@
  * under the License.
  */
 
-use crate::{encoders::bson::BsonStreamEncoder, Error, Payload, Schema, StreamEncoder};
+use crate::{Error, Payload, Schema, StreamEncoder};
 use base64::{Engine as Base64Engine, engine::general_purpose};
-use bson::document;
 use prost::Message;
 use prost_types::Any;
 use serde::{Deserialize, Serialize};
@@ -371,7 +370,7 @@ impl ProtoStreamEncoder {
                 "flatbuffer_size": data.len(),
                 "data": general_purpose::STANDARD.encode(&data)
             }),
-            Payload::Bson(document) => simd_json::to_owned_value(&mut document.to_vec().map_err(|_| Error::InvalidBsonPayload)?).map_err(|_| Error::InvalidBsonPayload)?
+            Payload::Bson(bson) => simd_json::to_owned_value(&mut bson::serialize_to_vec(&bson).map_err(|_| Error::InvalidBsonPayload)?).map_err(|_| Error::InvalidBsonPayload)?
         };
 
         if let simd_json::OwnedValue::Object(json_map) = json_value {
@@ -626,12 +625,12 @@ impl ProtoStreamEncoder {
                 ),
                 data,
             ),
-            Payload::Bson(document) => (
+            Payload::Bson(bson) => (
             format!(
                 "{}/google.protobuf.BytesValue",
                     self.config.format_options.type_url_prefix
             ),
-            document.to_vec().map_err(|_| Error::InvalidBsonPayload)?
+            bson::serialize_to_vec(&bson).map_err(|_| Error::InvalidBsonPayload)?
         )
         };
 
@@ -652,8 +651,8 @@ impl ProtoStreamEncoder {
             Payload::Raw(data) => Ok(data),
             Payload::Proto(text) => Ok(text.into_bytes()),
             Payload::FlatBuffer(data) => Ok(data),
-            Payload::Bson(document) => {
-                document.to_vec().map_err(|_| Error::InvalidBsonPayload)
+            Payload::Bson(bson) => {
+                bson::serialize_to_vec(&bson).map_err(|_| Error::InvalidBsonPayload)
             }
         }
     }

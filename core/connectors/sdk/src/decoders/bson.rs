@@ -16,8 +16,7 @@
  * under the License.
  */
 
-use bson::Document;
-use prost::bytes::Buf;
+use bson::Bson;
 
 use crate::{Error, Payload, Schema, StreamDecoder};
 
@@ -29,6 +28,71 @@ impl StreamDecoder for BsonStreamDecoder {
     }
 
     fn decode(&self, payload: Vec<u8>) -> Result<Payload, Error> {
-        Ok(Payload::Bson(Document::from_reader(payload.reader()).map_err(|_| Error::InvalidBsonPayload)?))
+        let bson: Bson = bson::deserialize_from_slice(&payload).map_err(|_| Error::InvalidBsonPayload)?;
+        Ok(Payload::Bson(bson))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bson::{bson, Bson};
+    use simd_json::json;
+
+    use crate::{encoders::bson::BsonStreamEncoder, StreamEncoder};
+
+    use super::*;
+
+    #[test]
+    fn decode_should_decode_bson_value_successfully() {
+        let encoder = BsonStreamEncoder;
+        let decoder = BsonStreamDecoder;
+
+        let payload = Payload::Bson(bson!({
+            "data": "test"
+        }));
+
+        let encoded = encoder.encode(payload).expect("failed to encode payload");
+
+        let result = decoder.decode(encoded);
+
+        assert!(
+            result.is_ok(),
+            "Should decode bson data"
+        );
+        
+        let document = if let Payload::Bson(document) = result.unwrap() {
+            document
+        } else {
+            panic!("decoded not a bson payload");
+        };
+
+        assert_eq!(document.as_document().expect("not a document").get("data"), Some(&Bson::String("test".to_string())));
+    }
+
+    #[test]
+    fn decode_should_decode_json_value_successfully() {
+        let encoder = BsonStreamEncoder;
+        let decoder = BsonStreamDecoder;
+
+        let payload = Payload::Json(json!({
+            "data": "test"
+        }));
+
+        let encoded = encoder.encode(payload).expect("failed to encode payload");
+
+        let result = decoder.decode(encoded);
+
+        assert!(
+            result.is_ok(),
+            "Should decode json data"
+        );
+        
+        let document = if let Payload::Bson(document) = result.unwrap() {
+            document
+        } else {
+            panic!("decoded not a bson payload");
+        };
+
+        assert_eq!(document.as_document().expect("not a document").get("data"), Some(&Bson::String("test".to_string())));
     }
 }

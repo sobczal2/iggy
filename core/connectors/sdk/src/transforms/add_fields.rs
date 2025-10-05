@@ -61,6 +61,7 @@ impl Transform for AddFields {
 
         match &message.payload {
             Payload::Json(_) => self.transform_json(metadata, message),
+            Payload::Bson(_) => self.transform_bson(metadata, message),
             _ => Ok(Some(message)),
         }
     }

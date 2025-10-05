@@ -151,9 +151,9 @@ impl FlatBufferStreamEncoder {
 
     fn encode_bson_to_flatbuffer(
         &self,
-        document: bson::Document,
+        bson: bson::Bson,
     ) -> Result<Vec<u8>, Error> {
-        let json_value = simd_json::value::to_owned_value(&mut simd_json::to_vec(&document).map_err(|_| Error::InvalidJsonPayload)?).map_err(|_| Error::InvalidJsonPayload)?;
+        let json_value = simd_json::value::to_owned_value(&mut simd_json::to_vec(&bson).map_err(|_| Error::InvalidJsonPayload)?).map_err(|_| Error::InvalidJsonPayload)?;
         self.encode_json_to_flatbuffer(json_value)
     }
 
@@ -246,7 +246,7 @@ impl StreamEncoder for FlatBufferStreamEncoder {
             Payload::Raw(data) => self.encode_raw_to_flatbuffer(data),
             Payload::FlatBuffer(data) => Ok(data),
             Payload::Proto(text) => self.encode_text_to_flatbuffer(text),
-            Payload::Bson(document) => self.encode_bson_to_flatbuffer(document),
+            Payload::Bson(bson) => self.encode_bson_to_flatbuffer(bson),
         }
     }
 }

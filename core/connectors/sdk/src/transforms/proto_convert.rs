@@ -589,7 +589,7 @@ impl ProtoConvert {
 
     fn protobuf_to_bson(&self, payload: Payload) -> Result<Payload, Error> {
         if let Payload::Json(json_value) = self.protobuf_to_json(payload)? {
-            let bson = bson::serialize_to_document(&json_value).map_err(|_| Error::InvalidBsonPayload)?;
+            let bson = bson::serialize_to_bson(&json_value).map_err(|_| Error::InvalidBsonPayload)?;
             Ok(Payload::Bson(bson))
         }
         else {

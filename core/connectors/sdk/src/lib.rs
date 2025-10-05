@@ -94,7 +94,7 @@ pub enum Payload {
     Text(String),
     Proto(String),
     FlatBuffer(Vec<u8>),
-    Bson(bson::Document),
+    Bson(bson::Bson),
 }
 
 impl Payload {
@@ -107,7 +107,7 @@ impl Payload {
             Payload::Text(text) => Ok(text.into_bytes()),
             Payload::Proto(text) => Ok(text.into_bytes()),
             Payload::FlatBuffer(value) => Ok(value),
-            Payload::Bson(value) => Ok(value.to_vec().map_err(|_| Error::InvalidBsonPayload)?),
+            Payload::Bson(value) => Ok(bson::serialize_to_vec(&value).map_err(|_| Error::InvalidBsonPayload)?),
         }
     }
 }
@@ -171,7 +171,7 @@ impl Schema {
                 Err(_) => Ok(Payload::Raw(value)),
             },
             Schema::FlatBuffer => Ok(Payload::FlatBuffer(value)),
-            Schema::Bson => Ok(Payload::Bson(bson::Document::from_reader(value.reader()).map_err(|_| Error::InvalidBsonPayload)?)),
+            Schema::Bson => Ok(Payload::Bson(bson::deserialize_from_slice(&value).map_err(|_| Error::InvalidBsonPayload)?)),
         }
     }
 
